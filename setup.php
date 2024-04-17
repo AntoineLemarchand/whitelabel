@@ -31,9 +31,9 @@
  */
 
 /**
- * 
- * New class for action on table_glpi_plugin_whitelabel_band 
- * 
+ *
+ * New class for action on table_glpi_plugin_whitelabel_band
+ *
  */
 
 class table_glpi_plugin_whitelabel_brand
@@ -93,7 +93,7 @@ class table_glpi_plugin_whitelabel_brand
             }
         }
         // Insert first entry with default itsmng colors
-        $query = "INSERT INTO glpi_plugin_whitelabel_brand (".implode(',',$fields2update).")     
+        $query = "INSERT INTO glpi_plugin_whitelabel_brand (".implode(',',$fields2update).")
             VALUES (".implode(',',$values2update).")";
          $DB->queryOrDie($query, $DB->error());
     }
@@ -107,14 +107,24 @@ class table_glpi_plugin_whitelabel_brand
         return $row;
     }
 
-
+    static function getVersion(){
+        global $DB;
+        $query = "SELECT version FROM glpi_plugin_whitelabel_brand WHERE id=1";
+        try {
+            $result = $DB->queryOrDie($query, $DB->error());
+            $row = $result->fetch_assoc();
+            return $row['version'];
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }
 
 /**
- * 
+ *
  * define class for default value
- * 
- * 
+ *
+ *
  */
 class plugin_whitelabel_const
 {
@@ -134,11 +144,11 @@ class plugin_whitelabel_const
         'nav_hover_color' => '#ffffff',
         'favorite_color' => '#ffff00',
     ];
-    
+
     public static function showConstant() {
         print_r(self::COLORS_DEFAULT);
       }
-    
+
     public static function value_key($key){
         if (isset(self::COLORS_DEFAULT[$key]))
             return self::COLORS_DEFAULT[$key];
