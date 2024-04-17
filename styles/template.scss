@@ -1,16 +1,17 @@
-$primary-color:             %primary_color%;
-$secondary-color:           %secondary_color%;
+:root {
+    --bs-primary:           %primary_color%;
+    --bs-secondary:         %secondary_color%;
 
+    --bs-primary-text:      %primary_text_color%;
+    --bs-secondary-text:    %secondary_text_color%;
 
-$primary-text-color:        %primary_text_color%;
-$secondary-text-color:      %secondary_text_color%;
+    --bs-header:            %header_background_color%;
+    --bs-header-text:       %header_text_color%;
 
-$header-background-color:   %header_background_color%;
-$header-text-color:         %header_text_color%;
+    --bs-nav:               %nav_background_color%;
+    --bs-nav-text:          %nav_text_color%;
+    --bs-nav-submenu:       %nav_submenu_color%;
+    --bs-nav-hover:         %nav_hover_color%;
 
-$nav-background-color:      %nav_background_color%;
-$nav-text-color:            %nav_text_color%;
-$nav-submenu-color:         %nav_submenu_color%;
-$nav-hover-color:           %nav_hover_color%;
-
-$favorite-color:            %favorite_color%;
+    --bs-favorite:          %favorite_color%
+}
