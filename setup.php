@@ -220,6 +220,11 @@ function plugin_whitelabel_check_prerequisites() {
         echo "This plugin requires ITSM >= 2.0";
         return false;
     }
+    // check rights on ./bak directory
+    if (!is_writable(Plugin::getPhpDir('whitelabel') . '/bak')) {
+        echo "The directory " . Plugin::getPhpDir('whitelabel') . "/bak must be writable";
+        return false;
+    }
     return true;
 }
 
