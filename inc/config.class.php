@@ -34,7 +34,7 @@ use ScssPhp\ScssPhp\Compiler;
 class PluginWhitelabelConfig extends CommonDBTM {
     /**
      * Displays the configuration page for the plugin
-     * 
+     *
      * @return void
      */
     public function showConfigForm() {
@@ -124,7 +124,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
      * @return array
      */
     private function getThemeColors() {
-         //use class to select on table 
+         //use class to select on table
          $config = new table_glpi_plugin_whitelabel_brand();
          $row=$config->select();
          //if result
@@ -174,7 +174,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
                                  "css_configuration" => array("text/css"));
         foreach ($files_to_upload as $k=>$v)
             $message .= $this->handleFile($k, $v);
-        
+
         if ($message != ""){
             Session::addMessageAfterRedirect("<font color=red><b>".$message."</b></font>", 'whitelabel');
         }
@@ -185,7 +185,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
 
         if(file_exists(Plugin::getPhpDir("whitelabel")."/uploads/favicon.ico")) {
             copy(Plugin::getPhpDir("whitelabel")."/uploads/favicon.ico", GLPI_ROOT."/pics/favicon.ico");
-        } 
+        }
     }
 
     /**
@@ -193,7 +193,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
      */
     public function refreshCss($reset = false) {
 
-        $default_value_css = new plugin_whitelabel_const();        
+        $default_value_css = new plugin_whitelabel_const();
         $css_default_values=$default_value_css->all_value();
         $all_fields_color = $default_value_css->all_value_split();
         //we need logo_central central field pour testing is exist or not
@@ -202,17 +202,14 @@ class PluginWhitelabelConfig extends CommonDBTM {
         if ($reset) {
             $row=$css_default_values;
         } else {
-            $row=$sql->select($all_fields_color);        
+            $row=$sql->select($all_fields_color);
         }
 
         foreach ($row as $k=>$v){
             $map["%".$k."%"] = $v;
         }
         //tab <address to put css>=><scss modele>
-        $style_css= [
-            GLPI_ROOT."/css/custom.scss"=>'template.scss',
-            //GLPI_ROOT."/css/whitelabel_login.css"=>'login_template.scss'
-        ];
+        $style_css=[ Plugin::getPhpDir("whitelabel", true)."/uploads/whitelabel.scss"=>'template.scss' ];
 
         foreach ($style_css as $k=>$v){
             //if a old css file exist => unlink
@@ -260,7 +257,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
 
                 if (move_uploaded_file($_FILES[$file]["tmp_name"], $uploadfile)) {
                     $sql = new table_glpi_plugin_whitelabel_brand();
-                    $sql-> update(array($file => $file.".".$ext));   
+                    $sql-> update(array($file => $file.".".$ext));
                     chmod($uploadfile, 0664);
                 }
                 break;
@@ -314,15 +311,15 @@ class PluginWhitelabelConfig extends CommonDBTM {
         //if checkbox selected to delete file
         $sql = new table_glpi_plugin_whitelabel_brand();
         //check this file exist
-        $row=$sql-> select($field);   
+        $row=$sql-> select($field);
         if (isset($row[$field])){
             //unlink file
             if (isset($row[$field]) && $row[$field] != "" && file_exists(Plugin::getPhpDir("whitelabel")."/uploads/".$row[$field]))
                 unlink(Plugin::getPhpDir("whitelabel")."/uploads/".$row[$field]);
             //update table
-            $sql-> update(array($field=>''));  
-            return true; 
-        }            
+            $sql-> update(array($field=>''));
+            return true;
+        }
         return false;
     }
 }
