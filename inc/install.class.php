@@ -43,20 +43,22 @@ class PluginWhitelabelInstall {
 
         $migration = new Migration(101);
         //get default values for fields
-        $default_value_css = new plugin_whitelabel_const();
-        if (!$DB->tableExists("glpi_plugin_whitelabel_brand")) {
-            $query = "CREATE TABLE glpi_plugin_whitelabel_brand (
+        $default_colors = PluginWhitelabelBrand::COLORS_DEFAULT;
+        $default_files = PluginWhitelabelBrand::FILES_DEFAULT;
+        $table = PluginWhitelabelBrand::getTable();
+        if (!$DB->tableExists($table)) {
+            $query = "CREATE TABLE " . $table . " (
                 id int(11) NOT NULL AUTO_INCREMENT,
-                favicon varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-                logo_central varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-                css_configuration varchar(255) COLLATE utf8_unicode_ci NOT NULL,";
-            foreach ($default_value_css::all_value() as $k => $v){
+                version varchar(255) NOT NULL DEFAULT '" . PLUGIN_WHITELABEL_VERSION . "',
+                favicon varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['favicon']."',
+                logo_central varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['logo_central']."',
+                css_configuration varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['css_configuration']."',";
+            foreach ($default_colors as $k => $v){
                 $query .= $k." varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$v."',";
-        }
-        $query .= "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-        $DB->queryOrDie($query, $DB->error());
-
-        $default_value_css->insert_default_config();
+            }
+            $query .= "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+            $DB->queryOrDie($query, $DB->error());
+            $DB->queryOrDie("INSERT INTO `" . $table . "` VALUES ()", $DB->error());
         }
 
         if (!$DB->tableExists("glpi_plugin_whitelabel_profiles")) {
@@ -148,7 +150,8 @@ class PluginWhitelabelInstall {
 
     function upgrade($migration) {
         global $DB;
-        $version = table_glpi_plugin_whitelabel_brand::getVersion();
+        $brand = new PluginWhitelabelBrand();
+        $version = $brand->getVersion();
 
         if (!$version) {
             $DB->queryOrDie("ALTER TABLE `glpi_plugin_whitelabel_brand` ADD `version` VARCHAR(255) NOT NULL DEFAULT '2.2.0' AFTER `id`");
@@ -157,7 +160,10 @@ class PluginWhitelabelInstall {
 
         switch ($version) {
             case '2.2.0':
-                $constants = new plugin_whitelabel_const();
+                $colors = PluginWhitelabelBrand::COLORS_DEFAULT;
+                $table = 'glpi_plugin_whitelabel_brand';
+                $newTable = PluginWhitelabelBrand::getTable();
+                $migration->renameTable($table, $newTable);
                 $addedFields = [
                     'header_text_color' => 'menu_text_color',
                     'nav_background_color' => 'menu_color',
@@ -166,13 +172,15 @@ class PluginWhitelabelInstall {
                     'header_text_color' => 'header_icons_color',
                 ];
                 foreach ($addedFields as $new => $old) {
-                    $color = $DB->request("SELECT ".$old." FROM glpi_plugin_whitelabel_brand WHERE id = 1");
-                    $migration->addField('glpi_plugin_whitelabel_brand', $new,
+                    $color = $DB->request("SELECT ".$old." FROM "
+                        . $table . " WHERE id = 1");
+                    $migration->addField($table, $new,
                         "varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".
                         iterator_to_array($color)[0][$old]."'");
                 }
-                $migration->addField('glpi_plugin_whitelabel_brand', 'favorite_color',
-                    "varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$constants->value_key('favorite_color')."'");
+                $migration->addField($table, 'favorite_color',
+                    "varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '"
+                    . $colors['favorite_color']."'");
                 $changedFields = [
                     'header_icons_color' => 'primary_text_color',
                     'menu_color' => 'secondary_color',
@@ -181,10 +189,13 @@ class PluginWhitelabelInstall {
                     'menu_onhover_color' => 'nav_hover_color',
                 ];
                 foreach ($changedFields as $old => $new) {
-                    // change the name and the default value of old based on constants
-                    $DB->queryOrDie("ALTER TABLE `glpi_plugin_whitelabel_brand` CHANGE `".$old."` `".$new."` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".
-                        $constants->value_key($old)."'");
+                    $DB->queryOrDie("ALTER TABLE `". $table
+                        . "` CHANGE `" . $old . "` `" . $new
+                        . "` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '"
+                        . $colors[$old] . "'");
                 }
+                $DB->queryOrDie("UPDATE `" . $table
+                    . "` SET `version` = '3.0.0' WHERE `id` = 1");
 
                 $migration->executeMigration();
                 break;
