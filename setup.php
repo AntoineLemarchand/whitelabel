@@ -46,6 +46,7 @@ function plugin_init_whitelabel() {
 
     $PLUGIN_HOOKS['add_css']['whitelabel'] = [
         "uploads/whitelabel.scss",
+        "uploads/login_whitelabel.scss",
         "uploads/css_configuration.css",
     ];
 }

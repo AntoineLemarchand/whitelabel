@@ -117,24 +117,6 @@ class PluginWhitelabelConfig extends CommonDBTM {
         renderTwigForm($form);
     }
 
-     /**
-     * Get the primary theme color
-     *
-     * @return array
-     */
-    private function getThemeColors() {
-    }
-
-    public function handleWhitelabel($reset = false) {
-    }
-
-    /**
-     * Generate and install new CSS sheets w/ styles mapped
-     */
-    public function refreshCss($reset = false) {
-    }
-
-
     /**
      * Creates a directory in the specified path, returns false if it fails
      *

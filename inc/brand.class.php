@@ -77,6 +77,28 @@ class PluginWhitelabelBrand extends CommonDBTM {
         return $input;
     }
 
+    function post_updateItem($history = 1) {
+        $pluginPath = Plugin::getPhpDir('whitelabel');
+        $files = [
+            $pluginPath . '/styles/template.scss' =>
+                $pluginPath . '/uploads/whitelabel.scss',
+            $pluginPath . '/styles/login_template.scss' =>
+                $pluginPath . '/uploads/login_whitelabel.scss',
+        ];
+
+        $keys = array_keys(array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT));
+        $map = [];
+        foreach ($keys as $key) {
+            $map['%' . $key . '%'] = $this->fields[$key];
+        }
+
+        foreach ($files as $template => $file) {
+            $content = file_get_contents($template);
+            $content = str_replace(array_keys($map), array_values($map), $content);
+            file_put_contents($file, $content);
+        }
+    }
+
     function getVersion() {
         if (isset($this->fields['version'])) {
             return $this->fields['version'];
@@ -84,13 +106,28 @@ class PluginWhitelabelBrand extends CommonDBTM {
         return '2.2.0';
     }
 
-    static function getTheme($default = false) {
+    function getTheme($default = false) {
+        $values = array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT);
         if ($default) {
-            return self::COLORS_DEFAULT + self::FILES_DEFAULT;
-        } else {
-            $brand = new self();
-            return $brand->fields;
+            return $values;
         }
+        foreach (array_keys($values) as $k) {
+            if ($this->fields[$k] != '') {
+                $values[$k] = $this->fields[$k];
+            }
+        }
+        return $values;
     }
 
+    function generateTemplate($template) {
+        $pluginPath = Plugin::getPhpDir('whitelabel');
+        $file = $pluginPath . '/uploads/' . $template . '.scss';
+        $content = file_get_contents($file);
+        $keys = array_keys(array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT));
+        $map = [];
+        foreach ($keys as $key) {
+            $map['%' . $key . '%'] = $this->fields[$key];
+        }
+        return str_replace(array_keys($map), array_values($map), $content);
+    }
 }

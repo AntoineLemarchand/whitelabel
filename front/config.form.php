@@ -41,8 +41,6 @@ if($plugin->isActivated("whitelabel")) {
         $brand = new PluginWhitelabelBrand();
         $_POST['id'] = 1;
         $brand->update($_POST);
-        $config->handleWhitelabel();
-        $config->refreshCss();
         Session::addMessageAfterRedirect(__('<p><b>Settings applied !</b></p><p><i>If you have any error, do the command in the ITSM-NG installation folder : <b>bin/console system:clear_cache</b></i></p>', 'whitelabel'));
     }
 
