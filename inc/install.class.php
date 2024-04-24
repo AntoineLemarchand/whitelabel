@@ -80,8 +80,8 @@ class PluginWhitelabelInstall {
 
         // Create backup of resources that will be altered
         if (!file_exists(Plugin::getPhpDir("whitelabel")."/bak/custom.scss.bak")) {
-            copy(GLPI_ROOT."/css/custom.scss", Plugin::getPhpDir("whitelabel")."/bak/custom.scss.bak");
-            copy(GLPI_ROOT."/pics/favicon.ico", Plugin::getPhpDir("whitelabel")."/bak/favicon.ico.bak");
+            $pluginPath = Plugin::getPhpDir("whitelabel");
+            copy(GLPI_ROOT . "/pics/favicon.ico", $pluginPath . "/bak/favicon.ico.bak");
         }
 
         // Update 2.0

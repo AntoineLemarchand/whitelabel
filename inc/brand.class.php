@@ -57,7 +57,7 @@ class PluginWhitelabelBrand extends CommonDBTM {
 
     function prepareInputForUpdate($input) {
         foreach (array_keys(self::FILES_DEFAULT) as $k) {
-            $filepath = Plugin::getWebDir('whitelabel', false) . '/uploads/' . $this->fields[$k];
+            $filepath = GLPI_ROOT . $this->fields[$k];
             $delete = false;
             if ($this->fields[$k] != '' && (
                   isset($input['_blank_' . $k]) ||
@@ -65,12 +65,22 @@ class PluginWhitelabelBrand extends CommonDBTM {
             ) {
                 unlink($filepath);
                 $delete = true;
+                if ($k == 'favicon') {
+                    copy(Plugin::getPhpDir('whitelabel') . '/bak/favicon.ico.bak',
+                        GLPI_ROOT . '/pics/favicon.ico');
+                }
             }
             if (isset($input[$k])) {
                 $input[$k] = json_decode(stripslashes($input[$k]), true)[0];
-                $path = ItsmngUploadHandler::uploadFile($input[$k]['path'],
-                    $input[$k]['name'], Plugin::getPhpDir('whitelabel') . '/uploads');
+                $path = ItsmngUploadHandler::uploadFile(
+                    $input[$k]['path'],
+                    $input[$k]['name'],
+                    Plugin::getPhpDir('whitelabel') . '/uploads',
+                    $k);
                 $input[$k] = str_replace(GLPI_ROOT, '', $path);
+                if ($k == 'favicon') {
+                    copy($path, GLPI_ROOT . '/pics/favicon.ico');
+                }
             } else if ($delete) {
                 $input[$k] = '';
             }

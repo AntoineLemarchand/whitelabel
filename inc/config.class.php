@@ -93,7 +93,7 @@ class PluginWhitelabelConfig extends CommonDBTM {
                             'name' => 'logo_file',
                             'type' => 'imageUpload',
                             'value' => $colors['logo_file'],
-                            'accept' => 'image/*',
+                            'accept' => '.png',
                             'external' => true
                         ],
                         sprintf(__('Import your CSS configuration (%s)', 'whitelabel'), Document::getMaxUploadSize()) => [
