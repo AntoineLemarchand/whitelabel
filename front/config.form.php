@@ -35,18 +35,19 @@ require_once("../inc/config.class.php");
 $plugin = new Plugin();
 
 if($plugin->isActivated("whitelabel")) {
+    $brand = new PluginWhitelabelBrand();
     $config = new PluginWhitelabelConfig();
     if(isset($_POST["update"])) {
         Session::checkRight("config", UPDATE);
-        $config->handleWhitelabel();
-        $config->refreshCss();
+        $_POST['id'] = 1;
+        $brand->update($_POST);
         Session::addMessageAfterRedirect(__('<p><b>Settings applied !</b></p><p><i>If you have any error, do the command in the ITSM-NG installation folder : <b>bin/console system:clear_cache</b></i></p>', 'whitelabel'));
     }
 
     if(isset($_POST["reset"])) {
         Session::checkRight("config", UPDATE);
-        $config->handleWhitelabel(true);
-        $config->refreshCss(true);
+        $defaultValues = $brand::COLORS_DEFAULT + ['id' => 1];
+        $brand->update($defaultValues);
         Session::addMessageAfterRedirect(__('<p><b>Default settings applied !</b></p><p><i>If you have any error, do the command in the ITSM-NG installation folder : <b>bin/console system:clear_cache</b></i></p>', 'whitelabel'));
     }
 
