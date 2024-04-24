@@ -51,7 +51,7 @@ class PluginWhitelabelInstall {
                 id int(11) NOT NULL AUTO_INCREMENT,
                 version varchar(255) NOT NULL DEFAULT '" . PLUGIN_WHITELABEL_VERSION . "',
                 favicon varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['favicon']."',
-                logo_central varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['logo_central']."',
+                logo_file varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['logo_file']."',
                 css_configuration varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['css_configuration']."',";
             foreach ($default_colors as $k => $v){
                 $query .= $k." varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$v."',";
@@ -151,24 +151,27 @@ class PluginWhitelabelInstall {
     function upgrade($migration) {
         global $DB;
         $brand = new PluginWhitelabelBrand();
-        $version = $brand->getVersion();
-
-        if (!$version) {
+        if (!count($brand->fields)) {
             $DB->queryOrDie("ALTER TABLE `glpi_plugin_whitelabel_brand` ADD `version` VARCHAR(255) NOT NULL DEFAULT '2.2.0' AFTER `id`");
+            $table = 'glpi_plugin_whitelabel_brand';
+            $newTable = PluginWhitelabelBrand::getTable();
+            $migration->renameTable($table, $newTable);
             $version = '2.2.0';
+            $migration->executeMigration();
         }
+        $version = $brand->getVersion();
+        $table = PluginWhitelabelBrand::getTable();
+
 
         switch ($version) {
             case '2.2.0':
                 $colors = PluginWhitelabelBrand::COLORS_DEFAULT;
-                $table = 'glpi_plugin_whitelabel_brand';
-                $newTable = PluginWhitelabelBrand::getTable();
-                $migration->renameTable($table, $newTable);
                 $addedFields = [
                     'menu_text_color' => 'header_text',
                     'menu_color' => 'nav',
                     'menu_text_color' => 'nav_text',
                     'primary_color' => 'header',
+                    'table_header_text_color' => 'primary',
                     'header_icons_color' => 'header_text',
                 ];
                 foreach ($addedFields as $old => $new) {
@@ -178,15 +181,15 @@ class PluginWhitelabelInstall {
                         "varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".
                         iterator_to_array($color)[0][$old]."'");
                 }
-                $migration->addField($table, 'favorite_color',
+                $migration->addField($table, 'favorite',
                     "varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '"
-                    . $colors['favorite_color']."'");
+                    . $colors['favorite']."'");
                 $changedFields = [
-                    'header_icons_color' => 'primary_text_color',
-                    'menu_color' => 'secondary_color',
-                    'menu_text_color' => 'secondary_text_color',
-                    'menu_active_color' => 'nav_submenu_color',
-                    'menu_onhover_color' => 'nav_hover_color',
+                    'header_icons_color' => 'primary_text',
+                    'menu_color' => 'secondary',
+                    'menu_text_color' => 'secondary_text',
+                    'menu_active_color' => 'nav_submenu',
+                    'menu_onhover_color' => 'nav_hover',
                 ];
                 foreach ($changedFields as $old => $new) {
                     $DB->queryOrDie("ALTER TABLE `". $table
@@ -194,8 +197,22 @@ class PluginWhitelabelInstall {
                         . "` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '"
                         . $colors[$old] . "'");
                 }
+                $toDrop = [
+                    'primary_color', 'dropdown_menu_background_color',
+                    'dropdown_menu_text_color', 'dropdown_menu_text_hover_color',
+                    'alert_background_color', 'alert_text_color', 'alert_header_background_color',
+                    'alert_header_text_color', 'table_header_background_color', 'table_header_text_color',
+                    'object_name_color', 'button_color', 'secondary_button_background_color',
+                    'secondary_button_text_color', 'secondary_button_box_shadow_color',
+                    'submit_button_background_color', 'submit_button_text_color',
+                    'submit_button_box_shadow_color', 'vsubmit_button_background_color',
+                    'vsubmit_button_text_color', 'vsubmit_button_box_shadow_color',
+                ];
+                foreach ($toDrop as $field) {
+                    $migration->dropField($table, $field);
+                }
                 $DB->queryOrDie("ALTER TABLE `". $table
-                    . "` CHANGE `logo_central` `logo_file` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''");
+                    . "` CHANGE `logo_central` `logo_file` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''");
                 $DB->queryOrDie("UPDATE `" . $table
                     . "` SET `version` = '3.0.0' WHERE `id` = 1");
 
