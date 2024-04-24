@@ -43,17 +43,17 @@ class PluginWhitelabelConfig extends CommonDBTM {
         $brand = new PluginWhitelabelBrand();
         $colors = $brand->getTheme();
         $field_labels = [
-            'primary_color' => __('Primary Color'),
-            'secondary_color' => __('Secondary Color'),
-            'primary_text_color' => __('Primary Text Color'),
-            'secondary_text_color' => __('Secondary Text Color'),
-            'header_background_color' => __('Header Background Color'),
-            'header_text_color' => __('Header Text Color'),
-            'nav_background_color' => __('Nav Background Color'),
-            'nav_text_color' => __('Nav Text Color'),
-            'nav_submenu_color' => __('Nav Submenu Color'),
-            'nav_hover_color' => __('Nav Hover Color'),
-            'favorite_color' => __('Favorite Color'),
+            'primary' => __('Primary Color'),
+            'secondary' => __('Secondary Color'),
+            'primary_text' => __('Primary Text Color'),
+            'secondary_text' => __('Secondary Text Color'),
+            'header' => __('Header Background Color'),
+            'header_text' => __('Header Text Color'),
+            'nav' => __('Nav Background Color'),
+            'nav_text' => __('Nav Text Color'),
+            'nav_submenu' => __('Nav Submenu Color'),
+            'nav_hover' => __('Nav Hover Color'),
+            'favorite' => __('Favorite Color'),
         ];
 
         $form = [
@@ -89,9 +89,9 @@ class PluginWhitelabelConfig extends CommonDBTM {
                         ],
                         sprintf(__('Logo (%s)', 'whitelabel'), Document::getMaxUploadSize()) => [
                             'id' => 'LogoFilePicker',
-                            'name' => 'logo_central',
+                            'name' => 'logo_file',
                             'type' => 'imageUpload',
-                            'value' => $colors['logo_central'],
+                            'value' => $colors['logo_file'],
                             'accept' => '.png'
                         ],
                         sprintf(__('Import your CSS configuration (%s)', 'whitelabel'), Document::getMaxUploadSize()) => [
@@ -116,20 +116,4 @@ class PluginWhitelabelConfig extends CommonDBTM {
         }
         renderTwigForm($form);
     }
-
-    /**
-     * Creates a directory in the specified path, returns false if it fails
-     *
-     * @param string $path The path to the folder to create
-     * @return bool
-     */
-    private function createDirectoryIfNotExist(string $path) {
-        if (!file_exists($path)) {
-           mkdir($path, 0664);
-        } elseif (!is_dir($path)) {
-            return false;
-        }
-        return true;
-    }
-
 }

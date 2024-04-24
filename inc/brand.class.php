@@ -32,22 +32,22 @@
 class PluginWhitelabelBrand extends CommonDBTM {
 
     const COLORS_DEFAULT = [
-        'primary_color' => '#0b0624',
-        'secondary_color' => '#0e2045',
-        'primary_text_color' => '#ffffff',
-        'secondary_text_color' => '#000000',
-        'header_background_color' => '#0b0624',
-        'header_text_color' => '#ffffff',
-        'nav_background_color' => '#0e2045',
-        'nav_text_color' => '#ffffff',
-        'nav_submenu_color' => '#0b0624',
-        'nav_hover_color' => '#ffffff',
-        'favorite_color' => '#ffff00',
+        'primary' => '#0b0624',
+        'secondary' => '#0e2045',
+        'primary_text' => '#ffffff',
+        'secondary_text' => '#000000',
+        'header' => '#0b0624',
+        'header_text' => '#ffffff',
+        'nav' => '#0e2045',
+        'nav_text' => '#ffffff',
+        'nav_submenu' => '#0b0624',
+        'nav_hover' => '#ffffff',
+        'favorite' => '#ffff00',
     ];
 
     const FILES_DEFAULT = [
         'favicon' => '',
-        'logo_central' => '',
+        'logo_file' => '',
         'css_configuration' => '',
     ];
 
@@ -79,24 +79,9 @@ class PluginWhitelabelBrand extends CommonDBTM {
 
     function post_updateItem($history = 1) {
         $pluginPath = Plugin::getPhpDir('whitelabel');
-        $files = [
-            $pluginPath . '/styles/template.scss' =>
-                $pluginPath . '/uploads/whitelabel.scss',
-            $pluginPath . '/styles/login_template.scss' =>
-                $pluginPath . '/uploads/login_whitelabel.scss',
-        ];
-
-        $keys = array_keys(array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT));
-        $map = [];
-        foreach ($keys as $key) {
-            $map['%' . $key . '%'] = $this->fields[$key];
-        }
-
-        foreach ($files as $template => $file) {
-            $content = file_get_contents($template);
-            $content = str_replace(array_keys($map), array_values($map), $content);
-            file_put_contents($file, $content);
-        }
+        $this->generateMainTemplate($pluginPath . '/uploads/whitelabel.scss');
+        $this->generateTemplate($pluginPath . '/styles/login_template.scss',
+            $pluginPath . '/uploads/login_whitelabel.scss');
     }
 
     function getVersion() {
@@ -106,8 +91,8 @@ class PluginWhitelabelBrand extends CommonDBTM {
         return '2.2.0';
     }
 
-    function getTheme($default = false) {
-        $values = array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT);
+    private function getColors($default = false) {
+        $values = self::COLORS_DEFAULT;
         if ($default) {
             return $values;
         }
@@ -119,15 +104,54 @@ class PluginWhitelabelBrand extends CommonDBTM {
         return $values;
     }
 
-    function generateTemplate($template) {
-        $pluginPath = Plugin::getPhpDir('whitelabel');
-        $file = $pluginPath . '/uploads/' . $template . '.scss';
-        $content = file_get_contents($file);
-        $keys = array_keys(array_merge(self::COLORS_DEFAULT, self::FILES_DEFAULT));
-        $map = [];
-        foreach ($keys as $key) {
-            $map['%' . $key . '%'] = $this->fields[$key];
+    private function getFiles($default = false) {
+        $values = self::FILES_DEFAULT;
+        if ($default) {
+            return $values;
         }
-        return str_replace(array_keys($map), array_values($map), $content);
+        foreach (array_keys($values) as $k) {
+            if ($this->fields[$k] != '') {
+                $values[$k] = $this->fields[$k];
+            }
+        }
+        return $values;
     }
+
+    function getTheme($default = false) {
+        return array_merge($this->getColors($default), $this->getFiles($default));
+    }
+
+    private function generateMainTemplate($target) {
+        global $CFG_GLPI;
+
+        $content = ":root {\n";
+        $colors = $this->getColors();
+        foreach ($colors as $k => $v) {
+            if ($v != '') {
+                $content .= "  --bs-" . str_replace('_', '-', $k) . ": " . $v . ";\n";
+            }
+        }
+        $files = $this->getFiles();
+        foreach ($files as $k => $v) {
+            if ($v != '') {
+                $content .= "  --" . str_replace('_', '-', $k) . ": url('"
+                    . $CFG_GLPI['root_doc'] . '/front/document.send.php?file=' . $v . "');\n";
+            }
+        }
+        $content .= "}\n";
+        file_put_contents($target, $content);
+    }
+
+    private function generateTemplate($template, $target) {
+        $colors = $this->getColors();
+        $files = $this->getFiles();
+        $template = file_get_contents($template);
+        $map = [];
+        foreach (array_merge($colors, $files) as $k => $v) {
+            $map['%' . $k . '%'] = $v;
+        }
+        $content = str_replace(array_keys($map), array_values($map), $template);
+        file_put_contents($target, $content);
+    }
+
 }

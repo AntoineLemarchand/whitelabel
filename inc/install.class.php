@@ -165,13 +165,13 @@ class PluginWhitelabelInstall {
                 $newTable = PluginWhitelabelBrand::getTable();
                 $migration->renameTable($table, $newTable);
                 $addedFields = [
-                    'header_text_color' => 'menu_text_color',
-                    'nav_background_color' => 'menu_color',
-                    'nav_text_color' => 'menu_text_color',
-                    'header_background_color' => 'primary_color',
-                    'header_text_color' => 'header_icons_color',
+                    'menu_text_color' => 'header_text',
+                    'menu_color' => 'nav',
+                    'menu_text_color' => 'nav_text',
+                    'primary_color' => 'header',
+                    'header_icons_color' => 'header_text',
                 ];
-                foreach ($addedFields as $new => $old) {
+                foreach ($addedFields as $old => $new) {
                     $color = $DB->request("SELECT ".$old." FROM "
                         . $table . " WHERE id = 1");
                     $migration->addField($table, $new,
@@ -194,6 +194,8 @@ class PluginWhitelabelInstall {
                         . "` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '"
                         . $colors[$old] . "'");
                 }
+                $DB->queryOrDie("ALTER TABLE `". $table
+                    . "` CHANGE `logo_central` `logo_file` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT ''");
                 $DB->queryOrDie("UPDATE `" . $table
                     . "` SET `version` = '3.0.0' WHERE `id` = 1");
 
