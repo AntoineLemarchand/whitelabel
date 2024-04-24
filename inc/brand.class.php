@@ -52,11 +52,18 @@ class PluginWhitelabelBrand extends CommonDBTM {
     ];
 
     function __construct() {
-        $this->getFromDB(1);
+        try {
+            $this->getFromDB(1);
+        } catch (Exception $e) {
+            return;
+        }
     }
 
     function prepareInputForUpdate($input) {
         foreach (array_keys(self::FILES_DEFAULT) as $k) {
+            if (!isset($input[$k]) && !isset($input['_blank_' . $k])) {
+                continue;
+            }
             $filepath = GLPI_ROOT . $this->fields[$k];
             $delete = false;
             if ($this->fields[$k] != '' && (
@@ -73,8 +80,7 @@ class PluginWhitelabelBrand extends CommonDBTM {
             if (isset($input[$k])) {
                 $input[$k] = json_decode(stripslashes($input[$k]), true)[0];
                 $path = ItsmngUploadHandler::uploadFile(
-                    $input[$k]['path'],
-                    $input[$k]['name'],
+                    $input[$k]['path'], $input[$k]['name'],
                     Plugin::getPhpDir('whitelabel') . '/uploads',
                     $k);
                 $input[$k] = str_replace(GLPI_ROOT, '', $path);
