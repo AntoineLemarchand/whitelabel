@@ -85,14 +85,16 @@ class PluginWhitelabelConfig extends CommonDBTM {
                             'name' => 'favicon',
                             'type' => 'imageUpload',
                             'value' => '',
-                            'accept' => '.ico'
+                            'accept' => '.ico',
+                            'external' => true
                         ],
                         sprintf(__('Logo (%s)', 'whitelabel'), Document::getMaxUploadSize()) => [
                             'id' => 'LogoFilePicker',
                             'name' => 'logo_file',
                             'type' => 'imageUpload',
                             'value' => $colors['logo_file'],
-                            'accept' => '.png'
+                            'accept' => 'image/*',
+                            'external' => true
                         ],
                         sprintf(__('Import your CSS configuration (%s)', 'whitelabel'), Document::getMaxUploadSize()) => [
                             'id' => 'CssFilePicker',

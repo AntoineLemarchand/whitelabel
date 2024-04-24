@@ -57,19 +57,20 @@ class PluginWhitelabelBrand extends CommonDBTM {
 
     function prepareInputForUpdate($input) {
         foreach (array_keys(self::FILES_DEFAULT) as $k) {
+            $filepath = Plugin::getWebDir('whitelabel', false) . '/uploads/' . $this->fields[$k];
             $delete = false;
             if ($this->fields[$k] != '' && (
                   isset($input['_blank_' . $k]) ||
                   (isset($input[$k]) && $input[$k] == ''))
             ) {
-                unlink(GLPI_DOC_DIR . '/' . $this->fields[$k]);
+                unlink($filepath);
                 $delete = true;
             }
             if (isset($input[$k])) {
                 $input[$k] = json_decode(stripslashes($input[$k]), true)[0];
                 $path = ItsmngUploadHandler::uploadFile($input[$k]['path'],
-                    $input[$k]['name'], ItsmngUploadHandler::PLUGIN);
-                $input[$k] = $path;
+                    $input[$k]['name'], Plugin::getPhpDir('whitelabel') . '/uploads');
+                $input[$k] = str_replace(GLPI_ROOT, '', $path);
             } else if ($delete) {
                 $input[$k] = '';
             }
@@ -135,7 +136,7 @@ class PluginWhitelabelBrand extends CommonDBTM {
         foreach ($files as $k => $v) {
             if ($v != '') {
                 $content .= "  --" . str_replace('_', '-', $k) . ": url('"
-                    . $CFG_GLPI['root_doc'] . '/front/document.send.php?file=' . $v . "');\n";
+                    . $CFG_GLPI['root_doc'] . $v . "');\n";
             }
         }
         $content .= "}\n";
