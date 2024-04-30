@@ -54,7 +54,7 @@ class PluginWhitelabelInstall {
                 logo_file varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['logo_file']."',
                 css_configuration varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$default_files['css_configuration']."',";
             foreach ($default_colors as $k => $v){
-                $query .= $k." varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$v."',";
+                $query .= "`".$k."` varchar(7) COLLATE utf8_unicode_ci NOT NULL DEFAULT '".$v."',";
             }
             $query .= "PRIMARY KEY (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
             $DB->queryOrDie($query, $DB->error());
@@ -107,8 +107,8 @@ class PluginWhitelabelInstall {
         global $DB;
 
         // Drop tables
-        if($DB->tableExists('glpi_plugin_whitelabel_brand')) {
-            $DB->queryOrDie("DROP TABLE `glpi_plugin_whitelabel_brand`",$DB->error());
+        if($DB->tableExists('glpi_plugin_whitelabel_brands')) {
+            $DB->queryOrDie("DROP TABLE `glpi_plugin_whitelabel_brands`",$DB->error());
         }
 
         if($DB->tableExists('glpi_plugin_whitelabel_profiles')) {
